@@ -1,7 +1,7 @@
 #!/bin/bash
 # selfcert.sh
 # MIT License © 2024 Nekorobi
-version='1.0.1'
+version='1.1.0'
 dir=./  bit=4096  day=3650  cn=CA   org=CA
 unset debug cacert cakey cert key onlyca quiet fqdns san operand request; declare -a operand fqdns
 
@@ -23,7 +23,7 @@ Subject's CN(common name): the first domain
 Subject alternative names: all the domains
 
 Resulting File name:
-  cacert.pem, cakey.pem, FirstDOMAIN.cert.pem, FirstDOMAIN.key.pem (e.g. example.com.key.pem)
+  cacert.pem, cakey.pem, FirstDOMAIN/cert.pem, FirstDOMAIN/key.pem (e.g. example.com/key.pem)
   If the CA files exist in --directory, read them and make only the server ones.
 
 Options:
@@ -97,11 +97,12 @@ makeSAN() { # Subject alternative names
 }
 
 checkDirectory() { # --directory
-  dir=$(readlink -m -- "$dir")
-  mkdir -p "$dir" && [[ -w $dir && -x $dir ]] || error "--directory: permission denied" 3
+  dir=$(readlink -m -- "$dir"); local dirCert=$dir/${fqdns[0]}
+  mkdir -p "$dirCert" && [[ -w $dir && -x $dir && -w $dirCert && -x $dirCert ]] ||
+    error "--directory: permission denied" 3
   # PEM filename
   cakey=$dir/cakey.pem  cacert=$dir/cacert.pem
-  key=$dir/${fqdns[0]}.key.pem  cert=$dir/${fqdns[0]}.cert.pem
+  key=$dirCert/key.pem  cert=$dirCert/cert.pem
   [[ -f $key ]] && error "--directory: server key exists: $key" 3
   [[ -f $cert ]] && error "--directory: server certificate exists: $cert" 3
   [[ -f $cacert && ! -f $cakey ]] && error "--directory: cacert.pem exists, but cakey.pem does not" 3

@@ -15,7 +15,7 @@
 
 # First argument: PEM
 # From the second: LESS="+/Certificate Output Options" man openssl-x509
-./readcert.sh ./pem/example.org.cert.pem -subject -issuer -ext subjectAltName
+./readcert.sh ./pem/example.org/cert.pem -subject -issuer -ext subjectAltName
 ```
 ```text
 subject=CN = example.org

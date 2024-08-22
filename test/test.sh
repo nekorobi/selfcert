@@ -10,12 +10,12 @@ $script 2>/dev/null 12--5.com && exit 40 || [[ $? = 2 ]] || exit 40 # valid: 1--
 
 # default
 $script >/dev/null 2>&1 || exit 50
-result=$(openssl x509 -subject -noout -in example.com.cert.pem)
+result=$($readcert example.com/cert.pem -subject)
 line='subject=CN = example.com'
 [[ $result = $line ]] || exit 50
 # existing cert
 $script --quiet 2>/dev/null && exit 51 || [[ $? = 3 ]] || exit 51
-rm -f *.pem
+rm -fr *.pem example.com
 
 # --only-ca
 $script --quiet --only-ca --bit 512 || exit 60
@@ -26,12 +26,12 @@ line='subject=O = CA, CN = CA'
 hash=$(md5sum cacert.pem)
 $script --quiet --bit 1024 || exit 61
 [[ $hash = $(md5sum cacert.pem) ]] || exit 61
-rm -f *.pem
+rm -fr *.pem example.com
 
 cd ..; script=../selfcert.sh  readcert=../readcert.sh
 
 #
-cert=$tmp/example.net.cert.pem  bit=2222  day=400  year=$((1 + $(date +%Y)))
+cert=$tmp/example.net/cert.pem  bit=2222  day=400  year=$((1 + $(date +%Y)))
 domains='example.net www. example.org example.com www. mail.'
 $script --quiet -d $tmp/ --org 'CA org' --cn 'my CA' --day $day --bit $bit $domains || exit 70
 result=$($readcert $cert -subject -issuer -ext subjectAltName)
