@@ -6,10 +6,10 @@
 - `./selfcert.sh --help`
 
 ### readcert.sh
-- Specify the certificate PEM file.
-### into-docker-volume.sh
-- The contents of the specified directory are stored in a Docker Volume.
-- The volume name is the directory name.
+- Specify the certificate PEM file
+### into-docker.sh
+- Set to a Docker volume|config|secret
+- `./into-docker.sh --help`
 
 ## Example
 ```bash
