@@ -11,12 +11,12 @@ result=$(docker volume ls --quiet --filter name=$name)
 $script --volume $tmp --name $name
 result=$(docker volume ls --quiet --filter name=$name)
 [[ $result = $name ]] || exit 21
-result=$(docker run --rm -it --mount type=volume,src=$name,dst=/mnt  alpine:3 cat /mnt/$name/test)
+result=$(docker run --rm --mount type=volume,src=$name,dst=/mnt  alpine:3 cat /mnt/$name/test)
 [[ $result = test ]] || exit 22
 docker volume rm $name >/dev/null
 # ends with '/.'
 $script --volume $tmp/.
-result=$(docker run --rm -it --mount type=volume,src=$name,dst=/mnt  alpine:3 cat /mnt/test)
+result=$(docker run --rm --mount type=volume,src=$name,dst=/mnt  alpine:3 cat /mnt/test)
 [[ $result = test ]] || exit 23
 docker volume rm $name >/dev/null
 
