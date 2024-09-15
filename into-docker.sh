@@ -59,6 +59,8 @@ if [[ $target = volume ]]; then
   [[ -d $source ]] || error "specify a directory" 2
 else
   [[ -f $source || -p $source ]] || error "specify a file" 2 # ok: --config <(echo abc)
+  docker info | egrep '^\s*Swarm: active$' >/dev/null || error 'Swarm inactive' 9
+  docker info | egrep '^\s*Is Manager: true$' >/dev/null || error 'Not a Manager. Run in Manager node.' 9
 fi
 [[ -r $source ]] || error "$source: permission denied" 2
 [[ $name ]] || name=$(basename "${source%/.}")
