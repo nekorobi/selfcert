@@ -1,4 +1,7 @@
 # selfcert
+
+[![Test](https://github.com/nekorobi/selfcert/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/nekorobi/selfcert/actions)
+
 - Generate CA and server self certificates
 
 ## selfcert.sh
