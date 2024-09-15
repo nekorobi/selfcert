@@ -1,7 +1,7 @@
 #!/bin/bash
 # into-docker.sh
 # MIT License © 2024 Nekorobi
-version='1.0.1'
+version='1.0.2'
 target=volume
 unset debug name source
 
@@ -69,7 +69,7 @@ fi
 
 if [[ $target = volume ]]; then
   docker volume create $name >/dev/null || error "docker volume create: failed" 10
-  container=$(docker run --rm -d --mount type=volume,src=$name,dst=/mnt  alpine sleep infinity)
+  container=$(docker run --rm -d --mount type=volume,src=$name,dst=/mnt  alpine:3 sleep infinity)
   [[ $container ]] || error "docker run: failed" 11
   docker cp --quiet "$source" $container:/mnt; status=$?
   docker kill $container >/dev/null
