@@ -1,7 +1,7 @@
 #!/bin/bash
 # into-docker.sh
 # MIT License © 2024 Nekorobi
-version='1.0.2'
+version='1.0.3'
 target=volume
 unset debug name source
 
@@ -9,18 +9,18 @@ help() {
   cat << END
 Usage: ./into-docker.sh [Option]... File|Directory
 
-Set to a Docker volume|config|secret.
+Set to a Docker Volume|Config|Secret.
 
 Options:
   -v, --volume  (Default option)
-      Put the directory into the Docker volume.
+      Put the directory into the Docker Volume.
       If the directory ends with '/.' (slash followed by dot),
       the contents of the directory are copied.
       e.g. ./into-docker.sh --volume /path/to/src/. --name my-volume
   -c, --config
-      Write the file to the Docker Swarm config.
+      Write the file to the Docker Swarm Config.
   -s, --secret
-      Write the file to the Docker Swarm secret.
+      Write the file to the Docker Swarm Secret.
   -n, --name Name
       The name of the Docker resource.
       Default: Name of the specified file or directory.
@@ -77,5 +77,5 @@ if [[ $target = volume ]]; then
   docker kill $container >/dev/null
   [[ $status = 0 ]] || error "docker cp: failed" 12
 else
-  cat "$source" | docker $target create $name - || error "docker $target create: failed" 20
+  cat "$source" | docker $target create $name - >/dev/null || error "docker $target create: failed" 20
 fi
