@@ -1,7 +1,7 @@
 #!/bin/bash
 # selfcert.sh
 # MIT License © 2024 Nekorobi
-version='v1.1.0'
+version='v1.1.1'
 dir=./  bit=4096  day=3650  cn=CA   org=CA
 unset debug cacert cakey cert key onlyca quiet fqdns san operand request; declare -a operand fqdns
 
