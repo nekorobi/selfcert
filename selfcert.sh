@@ -1,7 +1,7 @@
 #!/bin/bash
 # selfcert.sh
 # MIT License © 2024 Nekorobi
-version='1.1.0'
+version='v1.1.0'
 dir=./  bit=4096  day=3650  cn=CA   org=CA
 unset debug cacert cakey cert key onlyca quiet fqdns san operand request; declare -a operand fqdns
 
@@ -44,22 +44,22 @@ Options:
   -q, --quiet    be as quiet as possible.
   -V, --version  shows this version.
 
-selfcert.sh v$version
+selfcert.sh $version
 MIT License © 2024 Nekorobi
 END
 }
 
-error() { echo -e "\e[1;31mError:\e[m $1" 1>&2; [[ $2 ]] && exit $2 || exit 1; }
+error() { local s=$1; shift 1; echo -e "Error: $@" 1>&2; exit $s; }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-  --bit|--cn|--day|-d|--directory|--org) [[ $# = 1 || $2 =~ ^- ]] && error "$1: requires an argument";;&
-  --bit)          [[ $2 =~ [0-9]+ ]] || error "$2: not an integer"; bit=$2; shift 2;;
-  --cn)           [[ ${#2} -le 64 ]] || error "$2: too long"; cn=$2; shift 2;;
-  --day)          [[ $2 =~ [0-9]+ ]] || error "$2: not an integer"; day=$2; shift 2;;
+  --bit|--cn|--day|-d|--directory|--org) [[ $# = 1 || $2 =~ ^- ]] && error 1 "$1: requires an argument";;&
+  --bit)          [[ $2 =~ [0-9]+ ]] || error 1 "$2: not an integer"; bit=$2; shift 2;;
+  --cn)           [[ ${#2} -le 64 ]] || error 1 "$2: too long"; cn=$2; shift 2;;
+  --day)          [[ $2 =~ [0-9]+ ]] || error 1 "$2: not an integer"; day=$2; shift 2;;
   -d|--directory) dir=$2; shift 2;;
   --only-ca)      onlyca=yes; shift 1;;
-  --org)          [[ ${#2} -le 64 ]] || error "$2: too long"; org=$2; shift 2;;
+  --org)          [[ ${#2} -le 64 ]] || error 1 "$2: too long"; org=$2; shift 2;;
   #
   -h|--help)      help; exit 0;;
   -q|--quiet)     quiet=on; shift 1;;
@@ -68,10 +68,10 @@ while [[ $# -gt 0 ]]; do
   # ignore
   "") shift 1;;
   # invalid
-  -*) error "$1: unknown option";;
+  -*) error 1 "$1: unknown option";;
   # Operand
-  *)  [[ $1 =~ ^[-.a-z0-9]+$ ]] || error "$1: not a domain name" 2
-      [[ ${#operand[@]} = 0 && $1 =~ \.$ ]] && error "$1: ends with '.' (The first domain should be FQDN)" 2
+  *)  [[ $1 =~ ^[-.a-z0-9]+$ ]] || error 2 "$1: not a domain name"
+      [[ ${#operand[@]} = 0 && $1 =~ \.$ ]] && error 2 "$1: ends with '.' (The first domain should be FQDN)"
       operand[${#operand[@]}]=$1; shift 1;;
   esac
 done
@@ -88,7 +88,7 @@ makeSAN() { # Subject alternative names
   for e in "${operand[@]}"; do
     if [[ $e =~ \.$ ]]; then _fqdn=$e$parent; else parent=$e; _fqdn=$e; fi
     fqdns[${#fqdns[@]}]=$_fqdn
-    isFQDN "$_fqdn" || error "$_fqdn: not a domain name" 2
+    isFQDN "$_fqdn" || error 2 "$_fqdn: not a domain name"
     san+="DNS.$i = $_fqdn
   " # new line
     i=$((++i))
@@ -99,14 +99,14 @@ makeSAN() { # Subject alternative names
 checkDirectory() { # --directory
   dir=$(readlink -m -- "$dir"); local dirCert=$dir/${fqdns[0]}
   mkdir -p "$dirCert" && [[ -w $dir && -x $dir && -w $dirCert && -x $dirCert ]] ||
-    error "--directory: permission denied" 3
+    error 3 "--directory: permission denied"
   # PEM filename
   cakey=$dir/cakey.pem  cacert=$dir/cacert.pem
   key=$dirCert/key.pem  cert=$dirCert/cert.pem
-  [[ -f $key ]] && error "--directory: server key exists: $key" 3
-  [[ -f $cert ]] && error "--directory: server certificate exists: $cert" 3
-  [[ -f $cacert && ! -f $cakey ]] && error "--directory: cacert.pem exists, but cakey.pem does not" 3
-  [[ ! -f $cacert && -f $cakey ]] && error "--directory: cakey.pem exists, but cacert.pem does not" 3
+  [[ -f $key ]] && error 3 "--directory: server key exists: $key"
+  [[ -f $cert ]] && error 3 "--directory: server certificate exists: $cert"
+  [[ -f $cacert && ! -f $cakey ]] && error 3 "--directory: cacert.pem exists, but cakey.pem does not"
+  [[ ! -f $cacert && -f $cakey ]] && error 3 "--directory: cakey.pem exists, but cacert.pem does not"
 }
 
 makeCA() { # man config x509v3_config
@@ -156,17 +156,17 @@ $san
 
 # check openssl v3
 { type openssl && openssl version -v | grep "^OpenSSL 3\."; } >/dev/null 2>&1 ||
-  error "openssl v3 is required)" 99
+  error 99 "openssl v3 is required)"
 
 makeSAN; checkDirectory
 if [[ -f $cacert && -f $cakey ]]; then
   [[ ! $quiet ]] && echo "use the existing CA: cacert.pem, cakey.pem"
 else
-  { if [[ $quiet ]]; then makeCA 2>/dev/null; else makeCA; fi; } || error "CA: failed" 10
+  { if [[ $quiet ]]; then makeCA 2>/dev/null; else makeCA; fi; } || error 10 "CA: failed"
 fi
 if [[ ! $onlyca ]]; then
-  { if [[ $quiet ]]; then makeReq 2>/dev/null; else makeReq; fi; } || error "certificate request: failed" 11
-  { if [[ $quiet ]]; then makeServer 2>/dev/null; else makeServer; fi; } || error "server certificate: failed" 12
+  { if [[ $quiet ]]; then makeReq 2>/dev/null; else makeReq; fi; } || error 11 "certificate request: failed"
+  { if [[ $quiet ]]; then makeServer 2>/dev/null; else makeServer; fi; } || error 12 "server certificate: failed"
 fi
 [[ $quiet ]] && exit 0
 ls -l $cakey $cacert
